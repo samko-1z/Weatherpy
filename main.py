@@ -1,8 +1,8 @@
 import sys
 import requests
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout
-
+from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout, QButtonGroup, QRadioButton
 from PyQt5.QtCore import Qt
+from PyQt5 import QtGui
 
 class WeatherApp(QWidget):
     def __init__(self):
@@ -13,19 +13,49 @@ class WeatherApp(QWidget):
         self.temperature_label = QLabel(self)
         self.emoji_label = QLabel(self)
         self.description_label = QLabel(self)
-
+        self.setWindowIcon(QtGui.QIcon("weather.png"))
+        
+        
+        self.temp_unit_group = QButtonGroup(self)
+        self.celsius_radio = QRadioButton("Celsius (°C)")
+        self.fahrenheit_radio = QRadioButton("Fahrenheit (°F)")
+        self.kelvin_radio = QRadioButton("Kelvin (K)")
+        
+        self.celsius_radio.setChecked(True)
+        
+        self.temp_unit_group.addButton(self.celsius_radio)
+        self.temp_unit_group.addButton(self.fahrenheit_radio)
+        self.temp_unit_group.addButton(self.kelvin_radio)
+        
+        self.current_temp_k = None
+        
         self.initUI()
 
     def initUI(self): 
         self.setWindowTitle("Weather App")
+        self.setMinimumSize(500, 700)  
+
+        temp_unit_layout = QHBoxLayout()
+        temp_unit_layout.addWidget(self.celsius_radio)
+        temp_unit_layout.addWidget(self.fahrenheit_radio)
+        temp_unit_layout.addWidget(self.kelvin_radio)
+        
+        
+        self.celsius_radio.toggled.connect(self.update_temperature_display)
+        self.fahrenheit_radio.toggled.connect(self.update_temperature_display)
+        self.kelvin_radio.toggled.connect(self.update_temperature_display)
 
         vbox = QVBoxLayout()
         vbox.addWidget(self.city_label)
         vbox.addWidget(self.city_input)
         vbox.addWidget(self.get_weather_button)
+        vbox.addSpacing(20)  
+        vbox.addLayout(temp_unit_layout)
+        vbox.addSpacing(20)  
         vbox.addWidget(self.temperature_label)
         vbox.addWidget(self.emoji_label)
         vbox.addWidget(self.description_label)
+        vbox.addStretch()  
 
         self.setLayout(vbox)
 
@@ -35,6 +65,7 @@ class WeatherApp(QWidget):
         self.emoji_label.setAlignment(Qt.AlignCenter)
         self.description_label.setAlignment(Qt.AlignCenter)
 
+        
         self.city_label.setObjectName("city_label")
         self.city_input.setObjectName("city_input")
         self.get_weather_button.setObjectName("get_weather_button")
@@ -42,31 +73,97 @@ class WeatherApp(QWidget):
         self.emoji_label.setObjectName("emoji_label")
         self.description_label.setObjectName("description_label")
         
+        
+        self.celsius_radio.setObjectName("temperature_radio")
+        self.fahrenheit_radio.setObjectName("temperature_radio")
+        self.kelvin_radio.setObjectName("temperature_radio")
+        
+        
         self.setStyleSheet("""
-            QLabel, QPushButton {
-                font-family: Calibri;
+            QWidget {
+                background-color: #f0f8ff;
+                font-family: Calibri, Arial, sans-serif;
             }
+            
             QLabel#city_label {
                 font-size: 40px;
                 font-style: italic;
+                color: #2c3e50;
+                margin-top: 20px;
             }
+            
             QLineEdit#city_input {
                 font-size: 40px;
+                border: 2px solid #00c1ff;
+                border-radius: 15px;
+                padding: 5px 15px;
+                margin: 10px 20px;
+                background-color: white;
             }
+            
             QPushButton#get_weather_button {
                 font-size: 30px;
                 font-weight: bold;
+                background-color: #00c1ff;
+                color: white;
+                border-radius: 15px;
+                padding: 10px 20px;
+                margin: 10px 50px;
+                border: none;
             }
+            
+            QPushButton#get_weather_button:hover {
+                background-color: #00a3d9;
+            }
+            
+            QPushButton#get_weather_button:pressed {
+                background-color: #0088b3;
+            }
+            
+            QRadioButton#temperature_radio {
+                font-size: 20px;
+                color: #2c3e50;
+                spacing: 12px;
+                padding: 5px;
+            }
+            
+            QRadioButton#temperature_radio:checked {
+                color: #00c1ff;
+                font-weight: bold;
+            }
+            
+            QRadioButton#temperature_radio::indicator {
+                width: 18px;
+                height: 18px;
+                border-radius: 10px;
+                border: 2px solid #00c1ff;
+            }
+            
+            QRadioButton#temperature_radio::indicator:checked {
+                background-color: #00c1ff;
+                border: 2px solid #00c1ff;
+                width: 10px;
+                height: 10px;
+                border-radius: 6px;
+            }
+            
             QLabel#temperature_label {
                 font-size: 75px;
                 font-weight: bold;
+                color: #2c3e50;
+                margin: 10px;
             }
+            
             QLabel#emoji_label {
                 font-size: 100px;
-                font-family: Segoe UI emoji;
+                font-family: "Segoe UI Emoji", sans-serif;
             }
+            
             QLabel#description_label {
-                font-size: 50px;
+                font-size: 40px;
+                color: #34495e;
+                font-style: italic;
+                margin-bottom: 20px;
             }
         """)
 
@@ -75,6 +172,11 @@ class WeatherApp(QWidget):
     def get_weather(self):
         api_key = "d0c586677b033d3159aaa4438db4ddcf"
         city = self.city_input.text()
+        
+        if not city:
+            self.display_error("Please enter a city name")
+            return
+            
         url = f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}"
         
         try:
@@ -115,21 +217,39 @@ class WeatherApp(QWidget):
             self.display_error(f"Request Error:\n{req_error}")
         
     def display_error(self, message):
-        self.temperature_label.setStyleSheet("font-size: 75px;")
         self.temperature_label.setText(message)
         self.emoji_label.clear()
-        self.description_label.clear
+        self.description_label.clear()
+        self.current_temp_k = None
 
     def display_weather(self, data):
-        temperature_k = data["main"]["temp"]
-        temperature_c = temperature_k - 273.15
-        temperature_f = (temperature_k * 9/5) - 459.67
+        self.current_temp_k = data["main"]["temp"]
         weather_id = data["weather"][0]["id"]
-        weather_description = data["weather"][0]["description"]
+        weather_description = data["weather"][0]["description"].capitalize()
+        city_name = data["name"]
+        country = data["sys"]["country"]
 
-        self.temperature_label.setText(f"{temperature_c:.0f}°")
         self.emoji_label.setText(self.get_weather_emoji(weather_id))
-        self.description_label.setText(weather_description)
+        self.description_label.setText(f"{weather_description} in {city_name}, {country}")
+        
+        
+        self.update_temperature_display()
+    
+    def update_temperature_display(self):
+        if self.current_temp_k is None:
+            return
+            
+        if self.celsius_radio.isChecked():
+            temp_value = self.current_temp_k - 273.15
+            unit = "°C"
+        elif self.fahrenheit_radio.isChecked():
+            temp_value = (self.current_temp_k * 9/5) - 459.67
+            unit = "°F"
+        else:  
+            temp_value = self.current_temp_k
+            unit = "K"
+            
+        self.temperature_label.setText(f"{temp_value:.1f}{unit}")
     
     @staticmethod
     def get_weather_emoji(weather_id):
@@ -155,8 +275,6 @@ class WeatherApp(QWidget):
             return "☁️"
         else:
             return ""
-            
-
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
