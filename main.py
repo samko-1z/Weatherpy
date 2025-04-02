@@ -16,12 +16,20 @@ class WeatherApp(QWidget):
         self.description_label = QLabel(self)
         self.setWindowIcon(QtGui.QIcon("images/weather.png"))
         
+      
+        self.dark_mode_button = QPushButton(icon=QIcon("images/night-mode.png"))
+        self.light_mode_button = QPushButton(icon=QIcon("images/light-mode.png"))
+        
+        
+        self.dark_mode_button.setFixedSize(40, 40)
+        self.light_mode_button.setFixedSize(40, 40)
+      
+        self.is_dark_mode = False
         
         self.temp_unit_group = QButtonGroup(self)
         self.celsius_radio = QRadioButton("Celsius (°C)")
         self.fahrenheit_radio = QRadioButton("Fahrenheit (°F)")
         self.kelvin_radio = QRadioButton("Kelvin (K)")
-        self.dark_mode = QPushButton(icon=QIcon("images/night-mode.png"))
         
         self.celsius_radio.setChecked(True)
         
@@ -42,13 +50,22 @@ class WeatherApp(QWidget):
         temp_unit_layout.addWidget(self.fahrenheit_radio)
         temp_unit_layout.addWidget(self.kelvin_radio)
         
+   
+        self.dark_mode_button.clicked.connect(self.enable_dark_mode)
+        self.light_mode_button.clicked.connect(self.enable_light_mode)
         
         self.celsius_radio.toggled.connect(self.update_temperature_display)
         self.fahrenheit_radio.toggled.connect(self.update_temperature_display)
         self.kelvin_radio.toggled.connect(self.update_temperature_display)
 
+
+        top_layout = QHBoxLayout()
+        top_layout.addWidget(self.dark_mode_button)
+        top_layout.addWidget(self.light_mode_button)
+        top_layout.addStretch()  
+
         vbox = QVBoxLayout()
-        vbox.addWidget(self.dark_mode)
+        vbox.addLayout(top_layout)  
         vbox.addWidget(self.city_label)
         vbox.addWidget(self.city_input)
         vbox.addWidget(self.get_weather_button)
@@ -68,110 +85,236 @@ class WeatherApp(QWidget):
         self.emoji_label.setAlignment(Qt.AlignCenter)
         self.description_label.setAlignment(Qt.AlignCenter)
 
-        
         self.city_label.setObjectName("city_label")
         self.city_input.setObjectName("city_input")
         self.get_weather_button.setObjectName("get_weather_button")
         self.temperature_label.setObjectName("temperature_label")
         self.emoji_label.setObjectName("emoji_label")
         self.description_label.setObjectName("description_label")
-        self.dark_mode.setObjectName("dark_mode")
-        
+        self.dark_mode_button.setObjectName("theme_button")
+        self.light_mode_button.setObjectName("theme_button")
         
         self.celsius_radio.setObjectName("temperature_radio")
         self.fahrenheit_radio.setObjectName("temperature_radio")
         self.kelvin_radio.setObjectName("temperature_radio")
         
-        
-        self.setStyleSheet("""
-            QWidget {
-                background-color: #f0f8ff;
-                font-family: Calibri, Arial, sans-serif;
-            }
-            
-            QLabel#city_label {
-                font-size: 40px;
-                font-style: italic;
-                color: #2c3e50;
-                margin-top: 20px;
-            }
-            
-            QLineEdit#city_input {
-                font-size: 40px;
-                border: 2px solid #00c1ff;
-                border-radius: 15px;
-                padding: 5px 15px;
-                margin: 10px 20px;
-                background-color: white;
-            }
-            
-            QPushButton#get_weather_button {
-                font-size: 30px;
-                font-weight: bold;
-                background-color: #00c1ff;
-                color: white;
-                border-radius: 15px;
-                padding: 10px 20px;
-                margin: 10px 50px;
-                border: none;
-            }
-            
-            QPushButton#get_weather_button:hover {
-                background-color: #00a3d9;
-            }
-            
-            QPushButton#get_weather_button:pressed {
-                background-color: #0088b3;
-            }
-            
-            QRadioButton#temperature_radio {
-                font-size: 20px;
-                color: #2c3e50;
-                spacing: 12px;
-                padding: 5px;
-            }
-            
-            QRadioButton#temperature_radio:checked {
-                color: #00c1ff;
-                font-weight: bold;
-            }
-            
-            QRadioButton#temperature_radio::indicator {
-                width: 18px;
-                height: 18px;
-                border-radius: 10px;
-                border: 2px solid #00c1ff;
-            }
-            
-            QRadioButton#temperature_radio::indicator:checked {
-                background-color: #00c1ff;
-                border: 2px solid #00c1ff;
-                width: 10px;
-                height: 10px;
-                border-radius: 6px;
-            }
-            
-            QLabel#temperature_label {
-                font-size: 45px;
-                font-weight: bold;
-                color: #2c3e50;
-                margin: 10px;
-            }
-            
-            QLabel#emoji_label {
-                font-size: 100px;
-                font-family: "Segoe UI Emoji", sans-serif;
-            }
-            
-            QLabel#description_label {
-                font-size: 40px;
-                color: #34495e;
-                font-style: italic;
-                margin-bottom: 20px;
-            }
-        """)
+        self.apply_theme()
 
         self.get_weather_button.clicked.connect(self.get_weather)
+
+    def enable_dark_mode(self):
+        self.is_dark_mode = True
+        self.apply_theme()
+
+    def enable_light_mode(self):
+        self.is_dark_mode = False
+        self.apply_theme()
+
+    def apply_theme(self):
+        self.dark_mode_button.setVisible(not self.is_dark_mode)
+        self.light_mode_button.setVisible(self.is_dark_mode)
+        
+        if self.is_dark_mode:
+            self.setStyleSheet("""
+                QWidget {
+                    background-color: #1a1a2e;
+                    font-family: Calibri, Arial, sans-serif;
+                    color: #e0e0e0;
+                }
+                
+                QLabel#city_label {
+                    font-size: 40px;
+                    font-style: italic;
+                    color: #c0c0c0;
+                    margin-top: 20px;
+                }
+                
+                QLineEdit#city_input {
+                    font-size: 40px;
+                    border: 2px solid #00a3d9;
+                    border-radius: 15px;
+                    padding: 5px 15px;
+                    margin: 10px 20px;
+                    background-color: #2a2a3e;
+                    color: #e0e0e0;
+                }
+                
+                QPushButton#get_weather_button {
+                    font-size: 30px;
+                    font-weight: bold;
+                    background-color: #00a3d9;
+                    color: white;
+                    border-radius: 15px;
+                    padding: 10px 20px;
+                    margin: 10px 50px;
+                    border: none;
+                }
+                
+                QPushButton#get_weather_button:hover {
+                    background-color: #0088b3;
+                }
+                
+                QPushButton#get_weather_button:pressed {
+                    background-color: #00719c;
+                }
+                
+                QPushButton#theme_button {
+                    border-radius: 20px;
+                    border: None;
+                    padding: 5px;
+                }
+                
+                QPushButton#theme_button:hover {
+                    background-color: #3a3a4e;
+                }
+                
+                QRadioButton#temperature_radio {
+                    font-size: 20px;
+                    color: #c0c0c0;
+                    spacing: 12px;
+                    padding: 5px;
+                }
+                
+                QRadioButton#temperature_radio:checked {
+                    color: #00a3d9;
+                    font-weight: bold;
+                }
+                
+                QRadioButton#temperature_radio::indicator {
+                    width: 18px;
+                    height: 18px;
+                    border-radius: 10px;
+                    border: 2px solid #00a3d9;
+                }
+                
+                QRadioButton#temperature_radio::indicator:checked {
+                    background-color: #00a3d9;
+                    border: 2px solid #00a3d9;
+                    width: 10px;
+                    height: 10px;
+                    border-radius: 6px;
+                }
+                
+                QLabel#temperature_label {
+                    font-size: 45px;
+                    font-weight: bold;
+                    color: #e0e0e0;
+                    margin: 10px;
+                }
+                
+                QLabel#emoji_label {
+                    font-size: 100px;
+                    font-family: "Segoe UI Emoji", sans-serif;
+                }
+                
+                QLabel#description_label {
+                    font-size: 40px;
+                    color: #c0c0c0;
+                    font-style: italic;
+                    margin-bottom: 20px;
+                }
+            """)
+        else:
+            self.setStyleSheet("""
+                QWidget {
+                    background-color: #f0f8ff;
+                    font-family: Calibri, Arial, sans-serif;
+                }
+                
+                QLabel#city_label {
+                    font-size: 40px;
+                    font-style: italic;
+                    color: #2c3e50;
+                    margin-top: 20px;
+                }
+                
+                QLineEdit#city_input {
+                    font-size: 40px;
+                    border: 2px solid #00c1ff;
+                    border-radius: 15px;
+                    padding: 5px 15px;
+                    margin: 10px 20px;
+                    background-color: white;
+                }
+                
+                QPushButton#get_weather_button {
+                    font-size: 30px;
+                    font-weight: bold;
+                    background-color: #00c1ff;
+                    color: white;
+                    border-radius: 15px;
+                    padding: 10px 20px;
+                    margin: 10px 50px;
+                    border: none;
+                }
+                
+                QPushButton#get_weather_button:hover {
+                    background-color: #00a3d9;
+                }
+                
+                QPushButton#get_weather_button:pressed {
+                    background-color: #0088b3;
+                }
+                
+                QPushButton#theme_button {
+                    border-radius: 20px;
+                    border: None;
+                    padding: 5px;
+                }
+                
+                QPushButton#theme_button:hover {
+                    background-color: #949494;
+                }
+                
+                QRadioButton#temperature_radio {
+                    font-size: 20px;
+                    color: #2c3e50;
+                    spacing: 12px;
+                    padding: 5px;
+                }
+                
+                QRadioButton#temperature_radio:checked {
+                    color: #00c1ff;
+                    font-weight: bold;
+                }
+                
+                QRadioButton#temperature_radio::indicator {
+                    width: 18px;
+                    height: 18px;
+                    border-radius: 10px;
+                    border: 2px solid #00c1ff;
+                }
+                
+                QRadioButton#temperature_radio::indicator:checked {
+                    background-color: #00c1ff;
+                    border: 2px solid #00c1ff;
+                    width: 10px;
+                    height: 10px;
+                    border-radius: 6px;
+                }
+                
+                QLabel#temperature_label {
+                    font-size: 45px;
+                    font-weight: bold;
+                    color: #2c3e50;
+                    margin: 10px;
+                }
+                
+                QLabel#emoji_label {
+                    font-size: 100px;
+                    font-family: "Segoe UI Emoji", sans-serif;
+                    line-height: 180px;  
+                    padding: 30px;
+                    min-height: 150px;
+                }
+                
+                QLabel#description_label {
+                    font-size: 40px;
+                    color: #34495e;
+                    font-style: italic;
+                    margin-bottom: 20px;
+                }
+            """)
 
     def get_weather(self):
         api_key = "d0c586677b033d3159aaa4438db4ddcf"
@@ -235,7 +378,6 @@ class WeatherApp(QWidget):
 
         self.emoji_label.setText(self.get_weather_emoji(weather_id))
         self.description_label.setText(f"{weather_description} in {city_name}, {country}")
-        
         
         self.update_temperature_display()
     
