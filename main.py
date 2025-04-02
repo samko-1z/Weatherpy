@@ -3,6 +3,7 @@ import requests
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout, QButtonGroup, QRadioButton
 from PyQt5.QtCore import Qt
 from PyQt5 import QtGui
+from PyQt5.QtGui import QIcon
 
 class WeatherApp(QWidget):
     def __init__(self):
@@ -13,13 +14,14 @@ class WeatherApp(QWidget):
         self.temperature_label = QLabel(self)
         self.emoji_label = QLabel(self)
         self.description_label = QLabel(self)
-        self.setWindowIcon(QtGui.QIcon("weather.png"))
+        self.setWindowIcon(QtGui.QIcon("images/weather.png"))
         
         
         self.temp_unit_group = QButtonGroup(self)
         self.celsius_radio = QRadioButton("Celsius (°C)")
         self.fahrenheit_radio = QRadioButton("Fahrenheit (°F)")
         self.kelvin_radio = QRadioButton("Kelvin (K)")
+        self.dark_mode = QPushButton(icon=QIcon("images/night-mode.png"))
         
         self.celsius_radio.setChecked(True)
         
@@ -46,6 +48,7 @@ class WeatherApp(QWidget):
         self.kelvin_radio.toggled.connect(self.update_temperature_display)
 
         vbox = QVBoxLayout()
+        vbox.addWidget(self.dark_mode)
         vbox.addWidget(self.city_label)
         vbox.addWidget(self.city_input)
         vbox.addWidget(self.get_weather_button)
@@ -72,6 +75,7 @@ class WeatherApp(QWidget):
         self.temperature_label.setObjectName("temperature_label")
         self.emoji_label.setObjectName("emoji_label")
         self.description_label.setObjectName("description_label")
+        self.dark_mode.setObjectName("dark_mode")
         
         
         self.celsius_radio.setObjectName("temperature_radio")
@@ -148,7 +152,7 @@ class WeatherApp(QWidget):
             }
             
             QLabel#temperature_label {
-                font-size: 75px;
+                font-size: 45px;
                 font-weight: bold;
                 color: #2c3e50;
                 margin: 10px;
@@ -249,7 +253,7 @@ class WeatherApp(QWidget):
             temp_value = self.current_temp_k
             unit = "K"
             
-        self.temperature_label.setText(f"{temp_value:.1f}{unit}")
+        self.temperature_label.setText(f"{temp_value:.0f}{unit}")
     
     @staticmethod
     def get_weather_emoji(weather_id):
@@ -262,6 +266,8 @@ class WeatherApp(QWidget):
         elif 600 <= weather_id <= 632:
             return "❄️"
         elif 701 <= weather_id <= 741:
+            return "🌁"
+        elif 751 <= weather_id <= 761:
             return "🌫️"
         elif weather_id == 762:
             return "🌋"
