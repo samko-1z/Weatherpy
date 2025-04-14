@@ -3,7 +3,7 @@ import requests
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout, QButtonGroup, QRadioButton
 from PyQt5.QtCore import Qt
 from PyQt5 import QtGui
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QPixmap
 
 class WeatherApp(QWidget):
     def __init__(self):
@@ -12,14 +12,12 @@ class WeatherApp(QWidget):
         self.city_input = QLineEdit()
         self.get_weather_button = QPushButton("Get Weather", self)
         self.temperature_label = QLabel(self)
-        self.emoji_label = QLabel(self)
+        self.weather_image_label = QLabel(self)
         self.description_label = QLabel(self)
-        self.setWindowIcon(QtGui.QIcon("images/weather.png"))
+        self.setWindowIcon(QtGui.QIcon("icons/weather.png"))
         
-      
-        self.dark_mode_button = QPushButton(icon=QIcon("images/night-mode.png"))
-        self.light_mode_button = QPushButton(icon=QIcon("images/light-mode.png"))
-        
+        self.dark_mode_button = QPushButton(icon=QIcon("icons/night-mode.png"))
+        self.light_mode_button = QPushButton(icon=QIcon("icons/light-mode.png"))
         
         self.dark_mode_button.setFixedSize(40, 40)
         self.light_mode_button.setFixedSize(40, 40)
@@ -50,14 +48,12 @@ class WeatherApp(QWidget):
         temp_unit_layout.addWidget(self.fahrenheit_radio)
         temp_unit_layout.addWidget(self.kelvin_radio)
         
-   
         self.dark_mode_button.clicked.connect(self.enable_dark_mode)
         self.light_mode_button.clicked.connect(self.enable_light_mode)
         
         self.celsius_radio.toggled.connect(self.update_temperature_display)
         self.fahrenheit_radio.toggled.connect(self.update_temperature_display)
         self.kelvin_radio.toggled.connect(self.update_temperature_display)
-
 
         top_layout = QHBoxLayout()
         top_layout.addWidget(self.dark_mode_button)
@@ -73,7 +69,8 @@ class WeatherApp(QWidget):
         vbox.addLayout(temp_unit_layout)
         vbox.addSpacing(20)  
         vbox.addWidget(self.temperature_label)
-        vbox.addWidget(self.emoji_label)
+        vbox.addWidget(self.weather_image_label)
+        vbox.addSpacing(30)  # Increased spacing between image and description 
         vbox.addWidget(self.description_label)
         vbox.addStretch()  
 
@@ -82,14 +79,21 @@ class WeatherApp(QWidget):
         self.city_label.setAlignment(Qt.AlignCenter)
         self.city_input.setAlignment(Qt.AlignCenter)
         self.temperature_label.setAlignment(Qt.AlignCenter)
-        self.emoji_label.setAlignment(Qt.AlignCenter)
+        self.weather_image_label.setAlignment(Qt.AlignCenter)
         self.description_label.setAlignment(Qt.AlignCenter)
+        self.description_label.setWordWrap(True)
+        
+        # Set a fixed height for the weather image label to maintain consistent spacing
+        self.weather_image_label.setFixedHeight(150)
+        
+        # Set minimum height for description label to ensure enough space for text
+        self.description_label.setMinimumHeight(80)
 
         self.city_label.setObjectName("city_label")
         self.city_input.setObjectName("city_input")
         self.get_weather_button.setObjectName("get_weather_button")
         self.temperature_label.setObjectName("temperature_label")
-        self.emoji_label.setObjectName("emoji_label")
+        self.weather_image_label.setObjectName("weather_image_label")
         self.description_label.setObjectName("description_label")
         self.dark_mode_button.setObjectName("theme_button")
         self.light_mode_button.setObjectName("theme_button")
@@ -202,16 +206,18 @@ class WeatherApp(QWidget):
                     margin: 10px;
                 }
                 
-                QLabel#emoji_label {
-                    font-size: 100px;
-                    font-family: "Segoe UI Emoji", sans-serif;
+                QLabel#weather_image_label {
+                    margin: 0;
+                    padding: 0;
                 }
                 
                 QLabel#description_label {
-                    font-size: 40px;
+                    font-size: 36px;
                     color: #c0c0c0;
                     font-style: italic;
                     margin-bottom: 20px;
+                    padding: 0 20px;
+                    line-height: 1.3;
                 }
             """)
         else:
@@ -300,19 +306,18 @@ class WeatherApp(QWidget):
                     margin: 10px;
                 }
                 
-                QLabel#emoji_label {
-                    font-size: 100px;
-                    font-family: "Segoe UI Emoji", sans-serif;
-                    line-height: 180px;  
-                    padding: 30px;
-                    min-height: 150px;
+                QLabel#weather_image_label {
+                    margin: 0;
+                    padding: 0;
                 }
                 
                 QLabel#description_label {
-                    font-size: 40px;
+                    font-size: 36px;
                     color: #34495e;
                     font-style: italic;
                     margin-bottom: 20px;
+                    padding: 0 20px;
+                    line-height: 1.3;
                 }
             """)
 
@@ -365,7 +370,7 @@ class WeatherApp(QWidget):
         
     def display_error(self, message):
         self.temperature_label.setText(message)
-        self.emoji_label.clear()
+        self.weather_image_label.clear()
         self.description_label.clear()
         self.current_temp_k = None
 
@@ -376,8 +381,19 @@ class WeatherApp(QWidget):
         city_name = data["name"]
         country = data["sys"]["country"]
 
-        self.emoji_label.setText(self.get_weather_emoji(weather_id))
-        self.description_label.setText(f"{weather_description} in {city_name}, {country}")
+        image_path = self.get_weather_image(weather_id)
+        
+        pixmap = QPixmap(image_path)
+        pixmap = pixmap.scaled(120, 120, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        self.weather_image_label.setPixmap(pixmap)
+        
+        location_text = f"{city_name}, {country}"
+        if len(location_text) > 20:  # Threshold for adding a line break
+            description_text = f"{weather_description}\nin {location_text}"
+        else:
+            description_text = f"{weather_description} in {location_text}"
+            
+        self.description_label.setText(description_text)
         
         self.update_temperature_display()
     
@@ -398,31 +414,31 @@ class WeatherApp(QWidget):
         self.temperature_label.setText(f"{temp_value:.0f}{unit}")
     
     @staticmethod
-    def get_weather_emoji(weather_id):
+    def get_weather_image(weather_id):
         if 200 <= weather_id <= 232:
-            return "⛈️"
+            return "weather-icons/thunderstorm.png"
         elif 300 <= weather_id <= 321:
-             return "🌦️"
+            return "weather-icons/rainandsun.png"
         elif 500 <= weather_id <= 531:
-            return "🌧️"
+            return "weather-icons/heavy-rain.png"
         elif 600 <= weather_id <= 632:
-            return "❄️"
+            return "weather-icons/snowflake.png"
         elif 701 <= weather_id <= 741:
-            return "🌁"
+            return "weather-icons/fog.png"
         elif 751 <= weather_id <= 761:
-            return "🌫️"
+            return "weather-icons/dust.png"
         elif weather_id == 762:
-            return "🌋"
+            return "weather-icons/volcano.png"
         elif weather_id == 771:
-            return "💨"
+            return "weather-icons/windy.png"
         elif weather_id == 781:
-            return "🌪️"
+            return "weather-icons/tornado.png"
         elif weather_id == 800:
-            return "☀️"
+            return "weather-icons/sun.png"
         elif 801 <= weather_id <= 804:
-            return "☁️"
+            return "weather-icons/cloudy.png"
         else:
-            return ""
+            return "images/weather.png"
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
