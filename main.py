@@ -70,7 +70,7 @@ class WeatherApp(QWidget):
         vbox.addSpacing(20)  
         vbox.addWidget(self.temperature_label)
         vbox.addWidget(self.weather_image_label)
-        vbox.addSpacing(30)  # Increased spacing between image and description 
+        vbox.addSpacing(30)  
         vbox.addWidget(self.description_label)
         vbox.addStretch()  
 
@@ -83,10 +83,8 @@ class WeatherApp(QWidget):
         self.description_label.setAlignment(Qt.AlignCenter)
         self.description_label.setWordWrap(True)
         
-        # Set a fixed height for the weather image label to maintain consistent spacing
         self.weather_image_label.setFixedHeight(150)
         
-        # Set minimum height for description label to ensure enough space for text
         self.description_label.setMinimumHeight(80)
 
         self.city_label.setObjectName("city_label")
@@ -322,7 +320,7 @@ class WeatherApp(QWidget):
             """)
 
     def get_weather(self):
-        api_key = "d0c586677b033d3159aaa4438db4ddcf"
+        api_key = "" # Insert your own api key.
         city = self.city_input.text()
         
         if not city:
@@ -388,7 +386,7 @@ class WeatherApp(QWidget):
         self.weather_image_label.setPixmap(pixmap)
         
         location_text = f"{city_name}, {country}"
-        if len(location_text) > 20:  # Threshold for adding a line break
+        if len(location_text) > 20:
             description_text = f"{weather_description}\nin {location_text}"
         else:
             description_text = f"{weather_description} in {location_text}"
