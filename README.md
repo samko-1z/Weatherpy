@@ -11,7 +11,7 @@ WeatherPy is a graphical desktop application built with PyQt5 that fetches and d
 - Get current weather conditions for any city
 - Display temperature, humidity, wind speed, and weather description
 - User-friendly graphical interface built with PyQt5
-- Customizable temperature units (Celsius/Fahrenheit)
+- Customizable temperature units (Celsius/Fahrenheit/Kelvin)
 
 ## Installation
 
@@ -27,7 +27,8 @@ WeatherPy is a graphical desktop application built with PyQt5 that fetches and d
 
 3. Install the required dependencies:
    ```
-   pip install -r requirements.txt
+   pip install PyQt5
+   pip install requests
    ```
 
 4. Get an API key from [OpenWeatherMap](https://openweathermap.org/api) (Free tier available)
@@ -53,8 +54,11 @@ WeatherPy is a graphical desktop application built with PyQt5 that fetches and d
 - Requests library
 
 ## Screenshots
+Light mode:
+![image](https://github.com/user-attachments/assets/8e06fa6b-221d-4764-8678-874a3830c220)
+Dark mode: 
+![image](https://github.com/user-attachments/assets/ce4f98bf-6b49-43c5-a192-f280dd6ea1e7)
 
-*[Consider adding screenshots of your application here]*
 
 ## Future Improvements
 
@@ -72,4 +76,3 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 - [OpenWeatherMap](https://openweathermap.org/) for providing the weather API
 - [PyQt5](https://www.riverbankcomputing.com/software/pyqt/) for the GUI framework
-- This is my first Python project. Feedback and contributions are welcome!
